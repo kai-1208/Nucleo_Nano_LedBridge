@@ -8,16 +8,16 @@ int main() {
 
     while (1) {
         // LEDState::
-        // CommLost    = '1'
-        // Normal      = '2'
-        // Auto        = '3'
-        // SemiAuto    = '4'
-        // HighSpeed   = '5'
-        // LowSpeed    = '6'
+        // CommLost    = '1' 通信遮断
+        // Normal      = '2' 通常(通信OK)
+        // Auto        = '3' 自動
+        // SemiAuto    = '4' 半自動(センサ・システム動作中)
+        // HighSpeed   = '5' 高速モード
+        // LowSpeed    = '6' 低速モード
 
         pc_serial.write("1\n", 2);
-        sendLedState(LedState::CommLost);
-        ThisThread::sleep_for(3s);
+        sendLedState(LedState::CommLost); // CommLostをarduino nanoの方に送ってる
+        ThisThread::sleep_for(3s); // 3秒待機
 
         pc_serial.write("2\n", 2);
         sendLedState(LedState::Normal);
