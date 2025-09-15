@@ -1,13 +1,14 @@
 #include "NanoLedController.h"
-#include "mbed.h"
 
-static BufferedSerial nano_serial(PA_9, PA_10); 
-
-void setupNanoLedController() {
-    nano_serial.set_baud(9600);
+NanoLedController::NanoLedController(PinName tx_pin, PinName rx_pin)
+    : _nano_serial(tx_pin, rx_pin) {
 }
 
-void sendLedState(LedState state) {
+void NanoLedController::setup() {
+    _nano_serial.set_baud(9600);
+}
+
+void NanoLedController::sendLedState(LedState state) {
     char c = static_cast<char>(state);
-    nano_serial.write(&c, 1);
+    _nano_serial.write(&c, 1);
 }
