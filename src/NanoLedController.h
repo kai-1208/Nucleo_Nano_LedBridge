@@ -4,13 +4,14 @@
 #include "mbed.h"
 
 enum class LedState : char {
+    OFF         = '0',
     CommLost    = '1',
     Normal      = '2',
     Auto        = '3',
     SemiAuto    = '4',
     HighSpeed   = '5',
     LowSpeed    = '6',
-    Unknown     = '0'
+    Unknown     = '8'
 };
 
 class NanoLedController {

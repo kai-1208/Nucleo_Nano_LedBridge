@@ -427,6 +427,7 @@ void pid_control()
 // neopixel
 int get_state_priority(LedState state) {
     switch (state) {
+        case LedState::OFF:       return 0;
         case LedState::CommLost:  return 1;
         case LedState::Auto:      return 2;
         case LedState::HighSpeed: return 3;
