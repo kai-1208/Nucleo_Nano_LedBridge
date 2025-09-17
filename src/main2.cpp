@@ -475,8 +475,6 @@ int main() {
     move.start(move_aa);
     Thread can_status_thread;
     can_status_thread.start(can_status_monitor_thread);
-    Thread serial_state_threa;
-    serial_state_threa.start(serial_state_thread);
     Thread state_report_threa;
     state_report_threa.start(state_report_thread);
     // Thread pid_thread;
