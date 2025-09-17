@@ -42,19 +42,13 @@ PID tire_pid[4] = {
 
 DigitalOut led(LED1);
 
-NanoLedController Led(PA_9, PA_10);
+NanoLedController Led(PA_0, PA_0);
 LedState previous_state = LedState::Unknown;
 LedState current_state = LedState::Normal;
 LedState previous_state2 = LedState::Unknown;
 LedState current_state2 = LedState::Normal;
 
-Timer serial_timer;
-Timer state_toggle_timer;
-
-bool serial_status = true;
 bool display_status = true;
-
-Mutex pc_mutex; // ついかしました
 
 void move_aa()
 {
@@ -121,7 +115,6 @@ void receive_uart_thread()
     {
         char c;
         // 1バイト読み込む（ノンブロッキング処理）
-        pc_mutex.lock(); // ついかしました
         if (pc.read(&c, 1) > 0)
         {
             // 終端文字 '|' を受信した場合
@@ -166,7 +159,6 @@ void receive_uart_thread()
             // データがない場合は短時間スリープ
             ThisThread::sleep_for(1ms);
         }
-        pc_mutex.unlock(); // ついかしました
     }
 }
 
@@ -213,9 +205,7 @@ void can_status_monitor_thread()
             sprintf(can1_status_buf,
                     "2,nucleo2,web_server_node,%d,2,DJI-nucleo-can1,%s|",
                     random6_can1, can1_status_str);
-            pc_mutex.lock(); // ついかしました
             pc.write(can1_status_buf, strlen(can1_status_buf));
-            pc_mutex.unlock(); // ついかしました
 
             // CAN2ステータス報告
             const char *can2_status_str = can2_status ? "OK" : "NG";
@@ -223,9 +213,7 @@ void can_status_monitor_thread()
             sprintf(can2_status_buf,
                     "2,nucleo2,web_server_node,%d,2,DJI-nucleo-can2,%s|",
                     random6_can2, can2_status_str);
-            pc_mutex.lock(); // ついかしました
             pc.write(can2_status_buf, strlen(can2_status_buf));
-            pc_mutex.unlock(); // ついかしました
 
             // 最後の報告時刻とステータスを更新
             last_can_status_report_time = now_time;
@@ -426,28 +414,9 @@ void pid_control()
 }
 
 // neopixel
-void serial_state_thread() {
-    while (true) {
-        pc_mutex.lock(); // ついかしました
-        if (pc.readable()) {
-            char c;
-            pc_mutex.lock(); // ついかしました
-            pc.read(&c, 1);
-            pc_mutex.unlock(); // ついかしました
-            serial_timer.reset();
-        }
-        pc_mutex.unlock(); // ついかしました
-        if (serial_timer.elapsed_time() > 2s) {
-            serial_status = false;
-        } else {
-            serial_status = true;
-        }
-    }
-}
-
 void state_report_thread() {
     while (true) {
-        if (!can1_status || !can2_status || !serial_status) {
+        if (!can1_status || !can2_status) {
             current_state = LedState::CommLost;
         } else if (auto_status) {
             current_state = LedState::Auto;
