@@ -440,12 +440,8 @@ void state_report_thread() {
             }
         } else {
             if (state_changed) {
-                state_toggle_timer.reset();
                 display_status = true;
                 Led.sendLedState(current_state);
-            }
-            if (state_toggle_timer.elapsed_time() > 2s) {
-                state_toggle_timer.reset();
             }
             if (display_status) {
                 Led.sendLedState(current_state);
@@ -453,6 +449,7 @@ void state_report_thread() {
                 Led.sendLedState(current_state2);
             }
             display_status = !display_status;
+            ThisThread::sleep_for(2s);
         }
 
         ThisThread::sleep_for(50ms); // ついかしました
