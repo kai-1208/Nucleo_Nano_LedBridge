@@ -42,7 +42,7 @@ PID tire_pid[4] = {
 
 DigitalOut led(LED1);
 
-NanoLedController Led(PA_0, PA_0);
+NanoLedController Led(PA_0, PA_1);
 LedState previous_state = LedState::Unknown;
 LedState current_state = LedState::Normal;
 LedState previous_state2 = LedState::Unknown;
