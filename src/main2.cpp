@@ -46,7 +46,7 @@ NanoLedController Led(PA_0, PA_0);
 LedState previous_state = LedState::Unknown;
 LedState current_state = LedState::Normal;
 LedState previous_state2 = LedState::Unknown;
-LedState current_state2 = LedState::Normal;
+LedState current_state2 = LedState::Unknown;
 
 bool display_status = true;
 
