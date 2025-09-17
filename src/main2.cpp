@@ -48,6 +48,7 @@ LedState current_state = LedState::Normal;
 LedState previous_state2 = LedState::Unknown;
 LedState current_state2 = LedState::Unknown;
 
+bool serial_status = true; // ついかしました
 bool display_status = true;
 
 void move_aa()
@@ -414,9 +415,21 @@ void pid_control()
 }
 
 // neopixel
+int get_state_priority(LedState state) {
+    switch (state) {
+        case LedState::CommLost:  return 1;
+        case LedState::Auto:      return 2;
+        case LedState::HighSpeed: return 3;
+        case LedState::LowSpeed:  return 4;
+        case LedState::Normal:    return 5;
+        default:                  return 100;
+    }
+}
+
 void state_report_thread() {
+    LedState last_state = LedState::Unknown;
     while (true) {
-        if (!can1_status || !can2_status) {
+        if (!can1_status || !can2_status || !serial_status) {
             current_state = LedState::CommLost;
         } else if (auto_status) {
             current_state = LedState::Auto;
@@ -428,29 +441,43 @@ void state_report_thread() {
             current_state = LedState::Normal;
         }
 
-        if (current_state != previous_state) {
-            previous_state = current_state;
-        }
+        // if (current_state != previous_state) {
+        //     previous_state = current_state;
+        // }
 
-        bool state_changed = (current_state != previous_state || current_state2 != previous_state2);
+        // bool state_changed = (current_state != previous_state || current_state2 != previous_state2);
 
-        if (current_state == current_state2) {
-            if (!state_changed) {
-                Led.sendLedState(current_state);
-            }
+        int priority = get_state_priority(current_state);
+        int priority2 = get_state_priority(current_state2);
+
+        LedState final_state;
+        if (priority <= priority2) {
+            final_state = current_state;
         } else {
-            if (state_changed) {
-                display_status = true;
-                Led.sendLedState(current_state);
-            }
-            if (display_status) {
-                Led.sendLedState(current_state);
-            } else {
-                Led.sendLedState(current_state2);
-            }
-            display_status = !display_status;
-            ThisThread::sleep_for(2s);
+            final_state = current_state2;
         }
+
+        if (final_state != last_state) {
+            Led.sendLedState(final_state);
+            last_state = final_state;
+        }
+
+
+        // if (current_state == current_state2) {
+        //     if (!state_changed) {
+        //         Led.sendLedState(current_state);
+        //     }
+        // } else {
+        //     if (state_changed) {
+        //         display_status = true;
+        //         Led.sendLedState(current_state);
+        //     }
+        //     if (display_status) {
+        //         Led.sendLedState(current_state);
+        //     } else {
+        //         Led.sendLedState(current_state2);
+        //     }
+        // }
 
         ThisThread::sleep_for(50ms); // ついかしました
     }
