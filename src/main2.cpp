@@ -51,6 +51,8 @@ LedState current_state2 = LedState::Unknown;
 bool serial_status = true; // ついかしました
 bool display_status = true;
 
+Mutex pc_mutex;
+
 void move_aa()
 {
     while (1)
@@ -112,12 +114,17 @@ void receive_uart_thread()
     static char linebuf[512];
     size_t idx = 0;
 
+    Timer serial_timer;
+    serial_timer.start();
+
     while (true)
     {
         char c;
         // 1バイト読み込む（ノンブロッキング処理）
         if (pc.read(&c, 1) > 0)
         {
+            serial_timer.reset();
+            serial_status = true;
             // 終端文字 '|' を受信した場合
             if (c == '|')
             {
@@ -157,6 +164,9 @@ void receive_uart_thread()
                 }
             }
         } else {
+            if (serial_timer.elapsed_time() > 2s) {
+                serial_status = false;
+            }
             // データがない場合は短時間スリープ
             ThisThread::sleep_for(1ms);
         }
