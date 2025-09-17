@@ -437,7 +437,6 @@ int get_state_priority(LedState state) {
 }
 
 void state_report_thread() {
-    LedState last_state = LedState::Unknown;
     while (true) {
         if (!can1_status || !can2_status || !serial_status) {
             current_state = LedState::CommLost;
@@ -460,18 +459,11 @@ void state_report_thread() {
         int priority = get_state_priority(current_state);
         int priority2 = get_state_priority(current_state2);
 
-        LedState final_state;
         if (priority <= priority2) {
-            final_state = current_state;
+            Led.sendLedState(current_state);
         } else {
-            final_state = current_state2;
+            Led.sendLedState(current_state2);
         }
-
-        if (final_state != last_state) {
-            Led.sendLedState(final_state);
-            last_state = final_state;
-        }
-
 
         // if (current_state == current_state2) {
         //     if (!state_changed) {
