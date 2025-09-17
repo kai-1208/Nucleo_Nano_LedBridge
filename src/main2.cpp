@@ -25,10 +25,10 @@ int tire_current[4] = {0};           // タイヤの現在の電流値
 int tire_target[4] = {0};            // タイヤの目標の電流値
 float stick[3] = {0.0f, 0.0f, 0.0f}; // スティックの値
 
-int kasoku = 200;
+int kasoku = 250;
 
 DigitalIn left_box_rack(PC_1), right_box_rack(PC_2), left_sucker_limit(PC_3),
-    right_sucker_limit(PC_4);
+    right_sucker_limit(PC_4), kinkyu1(PC_10), kinkyu2(PC_11), dengen(PC_12);
 PID left_floor_pid(1.5, 0.3, 0.003, PID::Mode::VELOCITY);
 PID right_floor_pid(1.5, 0.3, 0.003, PID::Mode::VELOCITY);
 PID left_sucker_rack_pid(0.5, 2.5, 0.009, PID::Mode::VELOCITY);
@@ -48,7 +48,7 @@ LedState current_state = LedState::Normal;
 LedState previous_state2 = LedState::Unknown;
 LedState current_state2 = LedState::Unknown;
 
-bool serial_status = true; // ついかしました
+bool serial_status = true;
 bool display_status = true;
 
 Mutex pc_mutex;
@@ -439,7 +439,9 @@ int get_state_priority(LedState state) {
 
 void state_report_thread() {
     while (true) {
-        if (!can1_status || !can2_status || !serial_status) {
+        if(kinkyu1.read() == 1 || kinkyu2.read() == 1 || dengen.read() == 1){
+            current_state = LedState::OFF;
+        } else if (!can1_status || !can2_status || !serial_status) {
             current_state = LedState::CommLost;
         } else if (auto_status) {
             current_state = LedState::Auto;
@@ -504,6 +506,10 @@ int main() {
     can_status_thread.start(can_status_monitor_thread);
     Thread state_report_threa;
     state_report_threa.start(state_report_thread);
+
+    kinkyu1.mode(PullUp);
+    kinkyu2.mode(PullUp);
+    dengen.mode(PullUp);
     // Thread pid_thread;
     // // pid_thread.start(pid_control);
     while (1)
